@@ -11,3 +11,4 @@ from matplotlib.ticker import MultipleLocator
 from termcolor import colored
 
 plt.rcParams['text.usetex'] = True
+
