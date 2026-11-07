@@ -1,14 +1,17 @@
 """
-tight binding method for polyacetylene, following the explanation in TB_Saitobool.pdf
+tight binding method for polyacetylene, following the explanation in TB_Saitobook.pdf
 Dylan Assinner (dylan.assinner@student.uantwerpen.be)
-last updated: 2026-11-06
+last updated: 2026-11-07
 """
 from collections import namedtuple
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MultipleLocator
 from termcolor import colored
 
-class polyacetylene_TB:
+plt.rcParams['text.usetex'] = True
+
+class PolyAcetylene_TB:
     def __init__(self,energy2p,t,s):
         self.energy2p=energy2p
         self.t=t
@@ -54,9 +57,26 @@ class polyacetylene_TB:
         return eigenvalues
 
     def plot(self):
-
+        x=np.linspace(-1,1,100)
+        y=self.solver()
+        _, ax= plt.subplots()
+        ax.plot(x,y.pos, color='xkcd:bright blue', marker='none', label='positive eigenvalues')
+        ax.plot(x,y.neg, color='xkcd:deep blue', marker='none', label='negative eigenvalues')
+        ax.set_xlabel(r'$\frac{ka}{\pi}$')
+        ax.set_ylabel(r'$E$')
+        ax.tick_params(axis='both', which='both', direction='in')
+        ax.set_xlim(-1,1)
+        ax.xaxis.set_major_locator(MultipleLocator(0.5))
+        ax.xaxis.set_minor_locator(MultipleLocator(0.25))
+        ax.set_ylim(-2,4)
+        ax.yaxis.set_major_locator(MultipleLocator(1.0))
+        ax.yaxis.set_minor_locator(MultipleLocator(0.5))
+        ax.margins(0,0)
+        ax.title.set_text('Band structure polyacetylene')
+        ax.legend()
+        plt.show()
 
 if __name__=="__main__":
     print('Hello world')
-    test=polyacetylene_TB(0,-1,0.2)
-    print(test.solver())
+    test=PolyAcetylene_TB(0,-1,0.2)
+    test.plot()
