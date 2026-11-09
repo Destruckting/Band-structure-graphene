@@ -91,12 +91,6 @@ class PolyAcetyleneTightBinding:
         band_energies = np.array(energies)
         return band_energies
 
-    def density_of_states(self):
-        """calculating the density of states using a histogram"""
-        hist, bin_edges = np.histogram(self.solver_determinant(),500)
-        return hist/self.amount, bin_edges
-
-
     def plot_solved(self):
         """plotting the band structure from the expression of the eigenvalues"""
         x = np.linspace(-1, 1, 100)
@@ -118,7 +112,6 @@ class PolyAcetyleneTightBinding:
         ax.margins(0, 0)
         ax.title.set_text('Band structure polyacetylene')
         ax.legend()
-        plt.show()
 
     def plot_detsolver(self):
         """plotting the band structure from the determinant solver method"""
@@ -138,8 +131,6 @@ class PolyAcetyleneTightBinding:
         ax.yaxis.set_minor_locator(MultipleLocator(0.5))
         ax.margins(0, 0)
         ax.title.set_text('Band structure polyacetylene')
-        ax.legend()
-        plt.show()
 
 
 
@@ -147,6 +138,4 @@ if __name__ == "__main__":
     test = PolyAcetyleneTightBinding(0, -1, 0.2, 500)
     #test.plot_solved()
     test.plot_detsolver()
-    val, bin = test.density_of_states()
-    plt.stairs(val,bin)
     plt.show()
