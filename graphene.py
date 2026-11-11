@@ -1,7 +1,7 @@
 """
 tight binding method for graphene, following the explanation in TB_Saitobook.pdf
 Dylan Assinner (dylan.assinner@student.uantwerpen.be) and Ella Bernaerts (ella.bernaerts@student.uantwerpen.be)
-last updated: 2026-11-07
+last updated: 2026-11-11
 """
 
 #from collections import namedtuple
