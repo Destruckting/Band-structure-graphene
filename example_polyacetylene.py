@@ -112,7 +112,32 @@ class PolyAcetyleneTightBinding:
         ax.margins(0, 0)
         ax.title.set_text('Band structure polyacetylene')
         ax.legend()
+        
+    def plot_solved2(self, ax=None):
+        """plotting the band structure from the expression of the eigenvalues"""
 
+        y_pos, y_neg = self.solved_eigenvalues()
+        x = np.linspace(-1, 1, len(y_pos))
+        if ax is None:
+            _, ax = plt.subplots()
+
+        ax.plot(x, y_pos, color='xkcd:bright blue', marker='none',
+                label='positive eigenvalues')
+        ax.plot(x, y_neg, color='xkcd:deep blue', marker='none',
+                label='negative eigenvalues')
+        ax.set_xlabel(r'$\frac{ka}{\pi}$')
+        ax.set_ylabel(r'$E$')
+        ax.tick_params(axis='both', which='both', direction='in')
+        ax.set_xlim(-1, 1)
+        ax.xaxis.set_major_locator(MultipleLocator(0.5))
+        ax.xaxis.set_minor_locator(MultipleLocator(0.25))
+        ax.set_ylim(-2, 4)
+        ax.yaxis.set_major_locator(MultipleLocator(1.0))
+        ax.yaxis.set_minor_locator(MultipleLocator(0.5))
+        ax.margins(0, 0)
+        ax.title.set_text('Band structure polyacetylene')
+        ax.legend()
+        
     def plot_detsolver(self):
         """plotting the band structure from the determinant solver method"""
         x = np.linspace(-1, 1, 500)
@@ -131,11 +156,42 @@ class PolyAcetyleneTightBinding:
         ax.yaxis.set_minor_locator(MultipleLocator(0.5))
         ax.margins(0, 0)
         ax.title.set_text('Band structure polyacetylene')
+        
+    def plot_band_with_dos(self):
+        """Plot the band structure side-by-side with a Density of States (DOS) histogram"""
+        y_pos, y_neg = self.solved_eigenvalues()
+        x = np.linspace(-1, 1, len(y_pos))
+        all_energies = np.concatenate([y_pos,y_neg])
 
+        # two subplots sharing vertical energy axis
+        fig, (ax_band, ax_dos) = plt.subplots(
+            1, 2, sharey=True, gridspec_kw={'width_ratios': [3,1]})
+
+        #bandstructure curves on the left
+        PolyAcetyleneTightBinding.plot_solved2(self,ax_band)
+
+        #Density of States histogram on the right
+        #using D(E)=N(E)/V, the amount of bins over total energies
+        ax_dos.hist(all_energies, bins=50, orientation='horizontal',
+            color='mediumaquamarine', edgecolor='darkslategray', density=True)
+        ax_dos.set_xlabel('DOS')
+        ax_dos.set_title('Density of States')
+        ax_dos.set_xlim(0, 1.5)
+
+        #the bandstructure and Density of States graphs share a y-axis
+        for ax in [ax_band, ax_dos]:
+            ax.tick_params(axis='both', which='both', direction='in')
+            ax.set_ylim(-2, 4)
+            ax.yaxis.set_major_locator(MultipleLocator(1.0))
+            ax.yaxis.set_minor_locator(MultipleLocator(0.5))
+            ax.margins(0, 0)
+
+        plt.tight_layout()
 
 
 if __name__ == "__main__":
     test = PolyAcetyleneTightBinding(0, -1, 0.2, 500)
     #test.plot_solved()
     test.plot_detsolver()
+    test.plot_band_with_dos()
     plt.show()
