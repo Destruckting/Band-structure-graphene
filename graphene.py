@@ -4,20 +4,52 @@ Dylan Assinner (dylan.assinner@student.uantwerpen.be) and Ella Bernaerts (ella.b
 last updated: 2026-11-07
 """
 
-from collections import namedtuple
+#from collections import namedtuple
 from math import sqrt
 import numpy as np
+from scipy.linalg import eigh
 import matplotlib.pyplot as plt
-from matplotlib.ticker import MultipleLocator
+#from matplotlib.ticker import MultipleLocator
 from termcolor import colored
 
 plt.rcParams['text.usetex'] = True
 
 class Material:
-    def __init__(self, energy2p, s, t):
-        self.e2p = energy2p
+    def __init__(self, energy2p, t, s):
+        self.ep = energy2p
         self.s = s
         self.t = t
+
+    @property
+    def ep(self):
+        return self._ep
+
+    @ep.setter
+    def ep(self, newep):
+        if not isinstance(newep, (float, int)):
+            raise TypeError(colored('energy 2p must be a number', 'red'))
+        self._ep=newep
+
+    @property
+    def s(self):
+        return self._s
+
+    @s.setter
+    def s(self, news):
+        if not isinstance(news, (float, int)):
+            raise TypeError(colored('s must be a number', 'red'))
+        self._s=news
+
+    @property
+    def t(self):
+        return self._t
+
+    @t.setter
+    def t(self, newt):
+        if not isinstance(newt, (float, int)):
+            raise TypeError(colored('t must be a number', 'red'))
+        self._t=newt
+
     def Hamiltonian(self, kxa, kya):
         H = np.zeros([2,2], dtype=complex)
         H[0,0] = 1
@@ -30,17 +62,20 @@ class Material:
         return S
 
 class GraphenePz(Material):
-    def function(self, kxa, kya):
+    @staticmethod
+    def function(kxa, kya):
         return np.exp(1j*kxa/sqrt(3))+2*np.exp(1j*-1*kxa/(2*sqrt(3)))*np.cos(kya/2)
-    def function_compconjugate(self, kxa, kya):
+
+    @staticmethod
+    def function_compconjugate(kxa, kya):
         return np.exp(1j*-1*kxa/sqrt(3))+2*np.exp(1j*kxa/(2*sqrt(3)))*np.cos(kya/2)
 
     def Hamiltonian(self, kxa, kya):
         H = np.zeros([2,2], dtype=complex)
-        H[0,0] = self.e2p
+        H[0,0] = self.ep
         H[0,1] = self.t*self.function(kxa, kya)
         H[1,0] = self.t*self.function_compconjugate(kxa, kya)
-        H[1,1] = self.e2p
+        H[1,1] = self.ep
         return H
 
     def overlap_matrix(self, kxa, kya):
@@ -53,10 +88,16 @@ class GraphenePz(Material):
 
 
 class SolverTwoDimensions:
-    def __init__(self, material, amount):
+    def __init__(self, material, amountx, amounty):
         self.material = material
-        self.kxa=np.linspace(-np.pi, np.pi, amount)
-        self.kya=np.linspace(-np.pi, np.pi, amount)
+        if not isinstance(amountx, int) & isinstance(amounty, int):
+            raise TypeError(colored('amount must be a positive integer', 'red'))
+        if not amountx>0:
+            raise ValueError(colored('amountx must be an integer greater than 0', 'red'))
+        if not amounty>0:
+            raise ValueError(colored('amounty must be an integer greater than 0', 'red'))
+        self.kxa=np.linspace(-np.pi, np.pi, amountx)
+        self.kya=np.linspace(-np.pi, np.pi, amounty)
 
     @property
     def material(self):
@@ -65,15 +106,43 @@ class SolverTwoDimensions:
     @material.setter
     def material(self, newmaterial):
         if not isinstance(newmaterial, Material):
-            raise TypeError(colored("new material must be an object of a subclass of Material",'red'))
+            raise TypeError(colored("material must be an object of a subclass of Material",'red'))
         if type(newmaterial) == Material:
-            raise TypeError(colored("new material must be an object of a subclass of Material", 'red'))
+            raise TypeError(colored("material must be an object of a subclass of Material", 'red'))
         self._material = newmaterial
+
+    @property
+    def kxa(self):
+        return self._kxa
+
+    @kxa.setter
+    def kxa(self,newkxa):
+        self._kxa=newkxa
+
+    @property
+    def kya(self):
+        return self._kya
+
+    @kya.setter
+    def kya(self, newkya):
+        self._kya=newkya
+
+    def eigenvalues_solver(self):
+        """Tries to solve the eigenvalues based on the hamiltonian and the overlap matrix"""
+        dimensions = (self.material.Hamiltonian(0,0)).shape
+        eigenvalues=np.zeros((len(self.kxa),len(self.kya),dimensions[1]))
+        for ix,_ in enumerate(self.kxa):
+            for iy,_ in enumerate(self.kya):
+                eigenval= eigh(self.material.Hamiltonian(ix, iy), self.material.overlap_matrix(ix, iy), eigvals_only=True)
+                eigenvalues[ix, iy, :]= eigenval
+        return eigenvalues
+
 
 
 
 
 if __name__ == "__main__":
     test=GraphenePz(0, -3.033,0.129)
-    testing=SolverTwoDimensions(test)
-    print(test.Hamiltonian(0,0))
+    testing=SolverTwoDimensions(test, 100, 100)
+    eigenvaltest=testing.eigenvalues_solver()
+    print(eigenvaltest.shape)
