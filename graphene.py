@@ -132,8 +132,8 @@ class SolverTwoDimensions:
         """Tries to solve the eigenvalues based on the hamiltonian and the overlap matrix"""
         dimensions = (self.material.Hamiltonian(0,0)).shape
         eigenvalues=np.zeros((len(self.kxa),len(self.kya),dimensions[1]))
-        for ix,_ in enumerate(self.kxa):
-            for iy,_ in enumerate(self.kya):
+        for ix,valx in enumerate(self.kxa):
+            for iy,valy in enumerate(self.kya):
                 eigenval= eigh(self.material.Hamiltonian(ix, iy), self.material.overlap_matrix(ix, iy), eigvals_only=True)
                 eigenvalues[ix, iy, :]= eigenval
         return eigenvalues
@@ -157,9 +157,9 @@ class Visualizer:
         x, y = np.meshgrid(self.solver.kxa, self.solver.kya)
         zlow=eigenvalues[:,:,0]
         zhigh=eigenvalues[:,:,1]
-        ax.plot_surface(x, y, zhigh, vmin=zlow.min() * 2, cmap="Blues") #looks like shit, check solver?
+        ax.plot_surface(x, y, zhigh, cmap="Blues") #looks like shit, check solver?
         ax.set_aspect('equal')
-
+        print(x)
 
 
 
@@ -167,6 +167,6 @@ if __name__ == "__main__":
     test=GraphenePz(0, -3.033,0.129)
     testsolve=SolverTwoDimensions(test, 100, 100)
     testplot=Visualizer(testsolve)
-    print(testsolve.eigenvalues_solver())
+    print(testsolve.eigenvalues_solver().shape)
     testplot.plotter()
     plt.show()
