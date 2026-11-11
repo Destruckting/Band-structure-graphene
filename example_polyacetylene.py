@@ -2,7 +2,8 @@
 tight binding method for polyacetylene,
 following the explanation in TB_Saitobook.pdf
 Dylan Assinner (dylan.assinner@student.uantwerpen.be)
-last updated: 2026-11-07
+Ella Bernaerts (ella.bernaerts@student.uantwerpen.be)
+last updated: 2026-11-11
 """
 from collections import namedtuple
 import numpy as np
