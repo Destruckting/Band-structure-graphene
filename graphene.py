@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 #from matplotlib.ticker import MultipleLocator
 from termcolor import colored
 
+plt.style.use('_mpl-gallery')
 plt.rcParams['text.usetex'] = True
 
 class Material:
@@ -137,12 +138,35 @@ class SolverTwoDimensions:
                 eigenvalues[ix, iy, :]= eigenval
         return eigenvalues
 
+class Visualizer:
+    def __init__(self, solver):
+        self.solver = solver
+
+    @property
+    def solver(self):
+        return self._solver
+    @solver.setter
+    def solver(self, newsolver):
+        if not isinstance(newsolver, SolverTwoDimensions):
+            raise TypeError(colored('Solver must be an object of the SolverTwoDimensions class','red'))
+        self._solver = newsolver
+
+    def plotter(self):
+        eigenvalues=self.solver.eigenvalues_solver()
+        _, ax=plt.subplots(subplot_kw={"projection": "3d"})
+        x, y = np.meshgrid(self.solver.kxa, self.solver.kya)
+        zlow=eigenvalues[:,:,0]
+        zhigh=eigenvalues[:,:,1]
+        ax.plot_surface(x, y, zhigh, vmin=zlow.min() * 2, cmap="Blues") #looks like shit, check solver?
+        ax.set_aspect('equal')
 
 
 
 
 if __name__ == "__main__":
     test=GraphenePz(0, -3.033,0.129)
-    testing=SolverTwoDimensions(test, 100, 100)
-    eigenvaltest=testing.eigenvalues_solver()
-    print(eigenvaltest.shape)
+    testsolve=SolverTwoDimensions(test, 100, 100)
+    testplot=Visualizer(testsolve)
+    print(testsolve.eigenvalues_solver())
+    testplot.plotter()
+    plt.show()
