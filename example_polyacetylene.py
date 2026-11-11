@@ -193,6 +193,6 @@ class PolyAcetyleneTightBinding:
 if __name__ == "__main__":
     test = PolyAcetyleneTightBinding(0, -1, 0.2, 500)
     #test.plot_solved()
-    test.plot_detsolver()
+    #test.plot_detsolver()
     test.plot_band_with_dos()
     plt.show()
