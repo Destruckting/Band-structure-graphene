@@ -104,8 +104,8 @@ class GraphenePz(MaterialTwoDim):
         return S
 
     def brilluin_zone(self):
-        kxa = np.linspace(-4*np.pi/np.sqrt(3), 4*np.pi/np.sqrt(3), self.amount)
-        kya = np.linspace(-4*np.pi/np.sqrt(3), 4*np.pi/np.sqrt(3), self.amount)
+        kxa = np.linspace(-2*np.pi/np.sqrt(3), 2*np.pi/np.sqrt(3), self.amount)
+        kya = np.linspace(-2*np.pi/np.sqrt(3), 2*np.pi/np.sqrt(3), self.amount)
         bz = namedtuple("brilluin_zone", "kxa, kya")
         brilzone = bz(kxa, kya)
         return brilzone
@@ -162,7 +162,7 @@ class Visualizer:
 
 
 if __name__ == "__main__":
-    test=GraphenePz(0, -3.033,0.129, 1000)
+    test=GraphenePz(0, -3.033,0.129, 500)
     testsolve=SolverTwoDimensions(test)
     testplot=Visualizer(testsolve)
     testplot.plotter()
