@@ -139,6 +139,7 @@ class SolverTwoDimensions:
                 eigenvalues[ix, iy, :]= eigenval
         return eigenvalues
 
+
 class Visualizer:
     def __init__(self, solver):
         self.solver = solver
@@ -159,13 +160,13 @@ class Visualizer:
         x, y = np.meshgrid(self.solver.kxa, self.solver.kya, indexing="ij")
         zlow=eigenvalues[:,:,0]
         zhigh=eigenvalues[:,:,1]
-        ax.plot_surface(x, y, zhigh, cmap="Blues")
-        ax.plot_surface(x, y, zlow, cmap="Greens")
+        ax.plot_surface(x, y, zhigh, cmap="viridis")
+        ax.plot_surface(x, y, zlow, cmap="cividis")
 
 
 
 if __name__ == "__main__":
-    test=GraphenePz(0, -3.033,0.129, 1000)
+    test=GraphenePz(0, -3.033,0.129, 500)
     testsolve=SolverTwoDimensions(test)
     testplot=Visualizer(testsolve)
     testplot.plotter()
