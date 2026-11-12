@@ -104,8 +104,8 @@ class GraphenePz(MaterialTwoDim):
         return S
 
     def brilluin_zone(self):
-        kxa = np.linspace(-2*np.pi/np.sqrt(3), 2*np.pi/np.sqrt(3), self.amount)
-        kya = np.linspace(-2*np.pi/np.sqrt(3), 2*np.pi/np.sqrt(3), self.amount)
+        kxa = np.linspace(-4*np.pi/np.sqrt(3), 4*np.pi/np.sqrt(3), self.amount)
+        kya = np.linspace(-4*np.pi/np.sqrt(3), 4*np.pi/np.sqrt(3), self.amount)
         bz = namedtuple("brilluin_zone", "kxa, kya")
         brilzone = bz(kxa, kya)
         return brilzone
@@ -113,6 +113,9 @@ class GraphenePz(MaterialTwoDim):
 class SolverTwoDimensions:
     def __init__(self, material):
         self.material = material
+        bz= self.material.brilluin_zone()
+        self.kxa = bz.kxa
+        self.kya = bz.kya
 
     @property
     def material(self):
@@ -129,9 +132,9 @@ class SolverTwoDimensions:
     def eigenvalues_solver(self):
         """Tries to solve the eigenvalues based on the Hamiltonian and the overlap matrix"""
         dimensions = (self.material.Hamiltonian(0,0)).shape
-        eigenvalues=np.zeros((len(self.material.brilluin_zone().kxa),len(self.material.brilluin_zone().kya),dimensions[1]))
-        for ix, valx in enumerate(self.material.brilluin_zone().kxa):
-            for iy, valy in enumerate(self.material.brilluin_zone().kya):
+        eigenvalues=np.zeros((len(self.kxa),len(self.kya),dimensions[1]))
+        for ix, valx in enumerate(self.kxa):
+            for iy, valy in enumerate(self.kya):
                 eigenval, _ = eigh(self.material.Hamiltonian(valx, valy), self.material.overlap_matrix(valx, valy))
                 eigenvalues[ix, iy, :]= eigenval
         return eigenvalues
@@ -153,7 +156,7 @@ class Visualizer:
         eigenvalues=self.solver.eigenvalues_solver()
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
-        x, y = np.meshgrid(self.solver.material.brilluin_zone().kxa, self.solver.material.brilluin_zone().kya)
+        x, y = np.meshgrid(self.solver.kxa, self.solver.kya, indexing="ij")
         zlow=eigenvalues[:,:,0]
         zhigh=eigenvalues[:,:,1]
         ax.plot_surface(x, y, zhigh, cmap="Blues")
@@ -162,7 +165,7 @@ class Visualizer:
 
 
 if __name__ == "__main__":
-    test=GraphenePz(0, -3.033,0.129, 500)
+    test=GraphenePz(0, -3.033,0.129, 1000)
     testsolve=SolverTwoDimensions(test)
     testplot=Visualizer(testsolve)
     testplot.plotter()
