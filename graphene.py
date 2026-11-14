@@ -81,6 +81,14 @@ class MaterialTwoDim:
         brilzone=bz(kxa, kya)
         return brilzone
 
+    def high_symmetry_points(self):
+        highsimpoint= namedtuple('highsimmetrypoints', 'x, y')
+        gamma = highsimpoint(0, 0)
+        K = highsimpoint(1,1)
+        M= highsimpoint(1, 0)
+        highsim = namedtuple('highsymmetrypositions', 'gamma, K, M')
+        return highsim(gamma, K, M)
+
 
 class GraphenePz(MaterialTwoDim):
     @staticmethod
@@ -125,6 +133,7 @@ class SolverTwoDimensions:
         bz= self.material.brilluin_zone()
         self.kxa = bz.kxa
         self.kya = bz.kya
+        self.points = material.high_symmetry_points()
 
     @property
     def material(self):
@@ -165,16 +174,26 @@ class Visualizer:
     def plotter(self):
         eigenvalues=self.solver.eigenvalues_solver()
         fig = plt.figure()
-        ax = fig.add_subplot(projection='3d')
+        ax = fig.add_subplot(projection='3d', computed_zorder=False)
         x, y = np.meshgrid(self.solver.kxa, self.solver.kya, indexing="ij")
         zlow=eigenvalues[:,:,0]
         zhigh=eigenvalues[:,:,1]
-        ax.plot_surface(x, y, zhigh, cmap="viridis")
-        ax.plot_surface(x, y, zlow, cmap="cividis")
+        points = self.solver.points
+        gam = points.gamma
+        korner = points.K
+        middle = points.M
+        ax.plot_surface(x, y, zhigh, cmap="viridis", zorder = 3)
+        ax.plot_surface(x, y, zlow, cmap="cividis", zorder = 0)
         #functions used to verify positions of corners and edge (to find K and M point)
-        #ax.plot(np.linspace(0, 2*np.pi/np.sqrt(3), 100), np.linspace(0, 2*np.pi/3, 100), np.zeros(100))
-        #ax.plot(np.linspace(0, 2 * np.pi / np.sqrt(3), 100), np.linspace(0, -2 * np.pi / 3, 100), np.zeros(100))
-        #ax.plot(np.linspace(0, 2 * np.pi / np.sqrt(3), 100), np.zeros(100), np.zeros(100))
+        ax.plot(np.linspace(0, 2*np.pi/np.sqrt(3), 100), np.linspace(0, 2*np.pi/3, 100), np.zeros(100), color='black', zorder = 1)
+        ax.plot(np.linspace(0, 2 * np.pi / np.sqrt(3), 100), np.zeros(100), np.zeros(100), color='black', zorder = 1)
+        ax.plot(2*np.pi/np.sqrt(3)*np.ones(100), np.linspace(0, 2*np.pi/3, 100), np.zeros(100), color='black', zorder = 1)
+        ax.scatter(gam.x, gam.y, 0, color='black', zorder = 2)
+        ax.text(gam.x, gam.y, 1, r'$\gamma$', ha = 'center', va = 'center', fontsize = 12)
+        ax.scatter(middle.x, middle.y, 0, color='black', zorder = 2)
+        ax.text(middle.x+0.2, middle.y, 0, 'M', ha='center', va='center', fontsize=12)
+        ax.scatter(korner.x, korner.y, 0, color='black', zorder = 2)
+        ax.text(korner.x+0.2, korner.y+0.2, 0, 'K', ha='center', va='center', fontsize=12)
         ax.set_xlabel("x")
         ax.set_ylabel("y")
         ax.set_zlabel("z")
