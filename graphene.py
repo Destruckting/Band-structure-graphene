@@ -110,6 +110,10 @@ class GraphenePz(MaterialTwoDim):
         brilzone = bz(kxa, kya)
         return brilzone
 
+    def high_symmetry_points(self):
+        pass
+
+
 class SolverTwoDimensions:
     def __init__(self, material):
         self.material = material
@@ -162,6 +166,7 @@ class Visualizer:
         zhigh=eigenvalues[:,:,1]
         ax.plot_surface(x, y, zhigh, cmap="viridis")
         ax.plot_surface(x, y, zlow, cmap="cividis")
+        ax.plot(np.linspace(0, 2*np.pi/np.sqrt(3), 100), np.linspace(0, 2*np.pi, 100), np.zeros(100))
 
 
 
