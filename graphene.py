@@ -10,6 +10,7 @@ import numpy as np
 from scipy.linalg import eigh
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
+import matplotlib.patches as mpatches
 from termcolor import colored
 
 plt.style.use('_mpl-gallery')
@@ -180,11 +181,10 @@ class Visualizer:
         fig = plt.figure()
         ax = fig.add_subplot(projection='3d')
         x, y = np.meshgrid(self.solver.kxa, self.solver.kya, indexing="ij")
-        zmin=eigenvalues.min()
-        zmax=eigenvalues.max()
-        norm = mcolors.Normalize(vmin=zmin, vmax=zmax)
+        mpatches.RegularPolygon()
+
         for i in range(dimensions):
-            ax.plot_surface(x, y, eigenvalues[:, :, i], cmap="viridis", norm = norm)
+            ax.plot_surface(x, y, eigenvalues[:, :, i], color = "grey", edgecolor="black", linewidth=0.5,)
         ax.set_xlabel("x")
         ax.set_ylabel("y")
         ax.set_zlabel("z")
@@ -197,20 +197,21 @@ class Visualizer:
         korner = points.K
         middle = points.M
         ax.plot(np.linspace(0, 2 * np.pi / np.sqrt(3), 100), np.linspace(0, 2 * np.pi / 3, 100), np.zeros(100),
-                color='black')
-        ax.plot(np.linspace(0, 2 * np.pi / np.sqrt(3), 100), np.zeros(100), np.zeros(100), color='black')
-        ax.plot(2 * np.pi / np.sqrt(3) * np.ones(100), np.linspace(0, 2 * np.pi / 3, 100), np.zeros(100), color='black')
-        ax.scatter(gam.x, gam.y, 0, color='black')
-        ax.text(gam.x, gam.y, 1, r'$\gamma$', ha='center', va='center', fontsize=12)
-        ax.scatter(middle.x, middle.y, 0, color='black')
-        ax.text(middle.x + 0.2, middle.y, 0, 'M', ha='center', va='center', fontsize=12)
+                color='black', zorder=20)
+        ax.plot(np.linspace(0, 2 * np.pi / np.sqrt(3), 100), np.zeros(100), np.zeros(100), color='black', zorder=20)
+        ax.plot(2 * np.pi / np.sqrt(3) * np.ones(100), np.linspace(0, 2 * np.pi / 3, 100), np.zeros(100), color='black', zorder=20)
+        ax.scatter(gam.x, gam.y, 0, color='black', zorder=20)
+        ax.text(gam.x, gam.y, 1, r'$\gamma$', ha='center', va='center', fontsize=12, zorder=20)
+        ax.scatter(middle.x, middle.y, 0, color='black', zorder=20)
+        ax.text(middle.x + 0.2, middle.y, 0, 'M', ha='center', va='center', fontsize=12, zorder=20)
         ax.scatter(korner.x, korner.y, 0, color='black')
-        ax.text(korner.x + 0.2, korner.y + 0.2, 0, 'K', ha='center', va='center', fontsize=12)
+        ax.text(korner.x + 0.2, korner.y + 0.2, 0, 'K', ha='center', va='center', fontsize=12, zorder=20)
 
 
 if __name__ == "__main__":
     test=GraphenePz(0, -3.033,0.129, 500)
     testsolve=SolverTwoDimensions(test)
     testplot=Visualizer(testsolve)
-    testplot.plotter()
+    axes = testplot.plotter()
+    testplot.plotter_highsimpoints(axes)
     plt.show()
