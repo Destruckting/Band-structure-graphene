@@ -9,6 +9,7 @@ from math import sqrt
 import numpy as np
 from scipy.linalg import eigh
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 from termcolor import colored
 
 plt.style.use('_mpl-gallery')
@@ -155,7 +156,10 @@ class SolverTwoDimensions:
             for iy, valy in enumerate(self.kya):
                 eigenval, _ = eigh(self.material.Hamiltonian(valx, valy), self.material.overlap_matrix(valx, valy))
                 eigenvalues[ix, iy, :]= eigenval
-        return eigenvalues
+        return eigenvalues, dimensions[1]
+
+    def fermi_energy(self): #might be a nice idea to add as an optional calculation
+        pass
 
 
 class Visualizer:
@@ -172,33 +176,36 @@ class Visualizer:
         self._solver = newsolver
 
     def plotter(self):
-        eigenvalues=self.solver.eigenvalues_solver()
+        eigenvalues, dimensions =self.solver.eigenvalues_solver()
         fig = plt.figure()
-        ax = fig.add_subplot(projection='3d', computed_zorder=False)
+        ax = fig.add_subplot(projection='3d')
         x, y = np.meshgrid(self.solver.kxa, self.solver.kya, indexing="ij")
-        zlow=eigenvalues[:,:,0]
-        zhigh=eigenvalues[:,:,1]
+        zmin=eigenvalues.min()
+        zmax=eigenvalues.max()
+        norm = mcolors.Normalize(vmin=zmin, vmax=zmax)
+        for i in range(dimensions):
+            ax.plot_surface(x, y, eigenvalues[:, :, i], cmap="viridis", norm = norm)
+        ax.set_xlabel("x")
+        ax.set_ylabel("y")
+        ax.set_zlabel("z")
+        return ax
+
+    def plotter_highsimpoints(self, ax):
+        # functions used to verify positions of corners and edge (to find K and M point)
         points = self.solver.points
         gam = points.gamma
         korner = points.K
         middle = points.M
-        ax.plot_surface(x, y, zhigh, cmap="viridis", zorder = 3)
-        ax.plot_surface(x, y, zlow, cmap="cividis", zorder = 0)
-        #functions used to verify positions of corners and edge (to find K and M point)
-        ax.plot(np.linspace(0, 2*np.pi/np.sqrt(3), 100), np.linspace(0, 2*np.pi/3, 100), np.zeros(100), color='black', zorder = 1)
-        ax.plot(np.linspace(0, 2 * np.pi / np.sqrt(3), 100), np.zeros(100), np.zeros(100), color='black', zorder = 1)
-        ax.plot(2*np.pi/np.sqrt(3)*np.ones(100), np.linspace(0, 2*np.pi/3, 100), np.zeros(100), color='black', zorder = 1)
-        ax.scatter(gam.x, gam.y, 0, color='black', zorder = 2)
-        ax.text(gam.x, gam.y, 1, r'$\gamma$', ha = 'center', va = 'center', fontsize = 12)
-        ax.scatter(middle.x, middle.y, 0, color='black', zorder = 2)
-        ax.text(middle.x+0.2, middle.y, 0, 'M', ha='center', va='center', fontsize=12)
-        ax.scatter(korner.x, korner.y, 0, color='black', zorder = 2)
-        ax.text(korner.x+0.2, korner.y+0.2, 0, 'K', ha='center', va='center', fontsize=12)
-        ax.set_xlabel("x")
-        ax.set_ylabel("y")
-        ax.set_zlabel("z")
-
-
+        ax.plot(np.linspace(0, 2 * np.pi / np.sqrt(3), 100), np.linspace(0, 2 * np.pi / 3, 100), np.zeros(100),
+                color='black')
+        ax.plot(np.linspace(0, 2 * np.pi / np.sqrt(3), 100), np.zeros(100), np.zeros(100), color='black')
+        ax.plot(2 * np.pi / np.sqrt(3) * np.ones(100), np.linspace(0, 2 * np.pi / 3, 100), np.zeros(100), color='black')
+        ax.scatter(gam.x, gam.y, 0, color='black')
+        ax.text(gam.x, gam.y, 1, r'$\gamma$', ha='center', va='center', fontsize=12)
+        ax.scatter(middle.x, middle.y, 0, color='black')
+        ax.text(middle.x + 0.2, middle.y, 0, 'M', ha='center', va='center', fontsize=12)
+        ax.scatter(korner.x, korner.y, 0, color='black')
+        ax.text(korner.x + 0.2, korner.y + 0.2, 0, 'K', ha='center', va='center', fontsize=12)
 
 
 if __name__ == "__main__":
