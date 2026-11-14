@@ -104,14 +104,19 @@ class GraphenePz(MaterialTwoDim):
         return S
 
     def brilluin_zone(self):
-        kxa = np.linspace(-3*np.pi/np.sqrt(3), 3*np.pi/np.sqrt(3), self.amount)
-        kya = np.linspace(-3*np.pi/np.sqrt(3), 3*np.pi/np.sqrt(3), self.amount)
+        kxa = np.linspace(-2*np.pi/np.sqrt(3), 2*np.pi/np.sqrt(3), self.amount)
+        kya = np.linspace(-4*np.pi/3, 4*np.pi/3, self.amount)
         bz = namedtuple("brilluin_zone", "kxa, kya")
         brilzone = bz(kxa, kya)
         return brilzone
 
     def high_symmetry_points(self):
-        pass
+        highsimpoint= namedtuple('highsimmetrypoints', 'x, y')
+        gamma = highsimpoint(0, 0)
+        K = highsimpoint(2*np.pi/sqrt(3), 2*np.pi/3)
+        M= highsimpoint(2*np.pi/sqrt(3), 0)
+        highsim = namedtuple('highsymmetrypositions', 'gamma, K, M')
+        return highsim(gamma, K, M)
 
 
 class SolverTwoDimensions:
@@ -160,13 +165,20 @@ class Visualizer:
     def plotter(self):
         eigenvalues=self.solver.eigenvalues_solver()
         fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
+        ax = fig.add_subplot(projection='3d')
         x, y = np.meshgrid(self.solver.kxa, self.solver.kya, indexing="ij")
         zlow=eigenvalues[:,:,0]
         zhigh=eigenvalues[:,:,1]
         ax.plot_surface(x, y, zhigh, cmap="viridis")
         ax.plot_surface(x, y, zlow, cmap="cividis")
-        ax.plot(np.linspace(0, 2*np.pi/np.sqrt(3), 100), np.linspace(0, 2*np.pi, 100), np.zeros(100))
+        #functions used to verify positions of corners and edge (to find K and M point)
+        #ax.plot(np.linspace(0, 2*np.pi/np.sqrt(3), 100), np.linspace(0, 2*np.pi/3, 100), np.zeros(100))
+        #ax.plot(np.linspace(0, 2 * np.pi / np.sqrt(3), 100), np.linspace(0, -2 * np.pi / 3, 100), np.zeros(100))
+        #ax.plot(np.linspace(0, 2 * np.pi / np.sqrt(3), 100), np.zeros(100), np.zeros(100))
+        ax.set_xlabel("x")
+        ax.set_ylabel("y")
+        ax.set_zlabel("z")
+
 
 
 
