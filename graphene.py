@@ -275,7 +275,6 @@ if __name__ == "__main__":
     testsolve.eigenvalues_high_simmetry()
     testplot=Visualizer(testsolve)
     testplot.highsim_bs()
-    axes = testplot.plotter()
+    axes = testplot.clipped_plotter()
     testplot.plotter_highsimpoints(axes)
-    testplot.clipped_plotter()
     plt.show()
