@@ -11,7 +11,6 @@ from scipy.linalg import eigh
 import matplotlib.pyplot as plt
 from termcolor import colored
 
-plt.style.use('_mpl-gallery')
 plt.rcParams['text.usetex'] = True
 
 class MaterialTwoDim:
@@ -267,6 +266,7 @@ class Visualizer:
         ax.plot(x,eigenval, color='black')
         ax.plot(ylinegammax,yliney, color='black')
         ax.plot(ylineMx,yliney, color='black')
+        ax.set_ylabel(r'E [eV]')
 
 
 if __name__ == "__main__":
@@ -275,7 +275,6 @@ if __name__ == "__main__":
     testsolve.eigenvalues_high_simmetry()
     testplot=Visualizer(testsolve)
     testplot.highsim_bs()
-    axes = testplot.plotter()
+    axes = testplot.clipped_plotter()
     testplot.plotter_highsimpoints(axes)
-    testplot.clipped_plotter()
     plt.show()
