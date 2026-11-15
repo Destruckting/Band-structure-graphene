@@ -1,7 +1,7 @@
 """
 tight binding method for graphene, following the explanation in TB_Saitobook.pdf
 Dylan Assinner (dylan.assinner@student.uantwerpen.be) and Ella Bernaerts (ella.bernaerts@student.uantwerpen.be)
-last updated: 2026-11-11
+last updated: 2026-11-15
 """
 
 from collections import namedtuple
@@ -9,8 +9,6 @@ from math import sqrt
 import numpy as np
 from scipy.linalg import eigh
 import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
-import matplotlib.patches as mpatches
 from termcolor import colored
 
 plt.style.use('_mpl-gallery')
@@ -91,6 +89,27 @@ class MaterialTwoDim:
         highsim = namedtuple('highsymmetrypositions', 'gamma, K, M')
         return highsim(gamma, K, M)
 
+    def high_symmetry_vector(self):
+        """creates a vector that goes from K to gamma to M to K"""
+        points=self.high_symmetry_points()
+        gam = points.gamma
+        korner = points.K
+        middle = points.M
+        linex=np.concatenate((np.linspace(korner.x, gam.x, 100)[:-1],
+                              np.linspace(gam.x,middle.x,100)[:-1],
+                              np.linspace(middle.x, korner.x, 100)))
+        liney=np.concatenate((np.linspace(korner.y, gam.y, 100)[:-1],
+                              np.linspace(gam.y,middle.y,100)[:-1],
+                              np.linspace(middle.y, korner.y, 100)))
+        linevec = namedtuple('High_symmetry_vector', 'x y')
+        line = linevec(linex, liney)
+        distanceKtoGamma=sqrt((korner.x-gam.x)**2+(korner.y-gam.y)**2)
+        distanceGammatoM=sqrt((gam.x-middle.x)**2+(gam.y-middle.y)**2)
+        distanceMtoK=sqrt((middle.x-korner.x)**2+(middle.y-korner.y)**2)
+        distancetup=namedtuple('distances','long med short')
+        distances=distancetup(distanceKtoGamma, distanceGammatoM, distanceMtoK)
+        return line, distances
+
 
 class GraphenePz(MaterialTwoDim):
     @staticmethod
@@ -152,12 +171,23 @@ class SolverTwoDimensions:
     def eigenvalues_solver(self):
         """Tries to solve the eigenvalues based on the Hamiltonian and the overlap matrix"""
         dimensions = (self.material.Hamiltonian(0,0)).shape
-        eigenvalues=np.zeros((len(self.kxa),len(self.kya),dimensions[1]))
+        eigenvalues=np.zeros((len(self.kxa),len(self.kya),dimensions[0]))
         for ix, valx in enumerate(self.kxa):
             for iy, valy in enumerate(self.kya):
                 eigenval, _ = eigh(self.material.Hamiltonian(valx, valy), self.material.overlap_matrix(valx, valy))
                 eigenvalues[ix, iy, :]= eigenval
         return eigenvalues, dimensions[1]
+
+    def eigenvalues_high_simmetry(self):
+        """Tries to solve the eigenvalues for the high simmetry directions"""
+        dimensions = (self.material.Hamiltonian(0, 0)).shape
+        highsimvec, _ = self.material.high_symmetry_vector()
+        eigenvalues=np.zeros((len(highsimvec.x),dimensions[0]))
+        for i in range(len(highsimvec.x)):
+            eigenval, _=eigh(self.material.Hamiltonian(highsimvec.x[i], highsimvec.y[i]),
+                             self.material.overlap_matrix(highsimvec.x[i], highsimvec.y[i]))
+            eigenvalues[i,:]=eigenval
+        return eigenvalues
 
     def fermi_energy(self): #might be a nice idea to add as an optional calculation
         pass
@@ -181,10 +211,27 @@ class Visualizer:
         fig = plt.figure()
         ax = fig.add_subplot(projection='3d')
         x, y = np.meshgrid(self.solver.kxa, self.solver.kya, indexing="ij")
-        mpatches.RegularPolygon()
-
         for i in range(dimensions):
-            ax.plot_surface(x, y, eigenvalues[:, :, i], color = "grey", edgecolor="black", linewidth=0.5,)
+            ax.plot_surface(x, y, eigenvalues[:, :, i], color = "silver", edgecolor="black", linewidth=0.5)
+        ax.set_xlabel("x")
+        ax.set_ylabel("y")
+        ax.set_zlabel("z")
+        return ax
+
+    def clipped_plotter(self):
+        eigenvalues, dimensions = self.solver.eigenvalues_solver()
+        fig = plt.figure()
+        ax = fig.add_subplot(projection='3d')
+        x, y = np.meshgrid(self.solver.kxa, self.solver.kya, indexing="ij")
+        #creating hexagonal mask
+        abs_x=np.abs(x)
+        abs_y=np.abs(y)
+        radius = np.sqrt(self.solver.points.K.x ** 2 + self.solver.points.K.y ** 2)
+        outside_hex=(abs_x > radius * np.sqrt(3) / 2) | (abs_y + abs_x / np.sqrt(3) > radius)
+        for i in range(dimensions):
+            z=eigenvalues[:, :, i]
+            z[outside_hex] = np.nan
+            ax.plot_surface(x, y, z, color="silver", edgecolor="black", linewidth=0.5)
         ax.set_xlabel("x")
         ax.set_ylabel("y")
         ax.set_zlabel("z")
@@ -207,11 +254,28 @@ class Visualizer:
         ax.scatter(korner.x, korner.y, 0, color='black')
         ax.text(korner.x + 0.2, korner.y + 0.2, 0, 'K', ha='center', va='center', fontsize=12, zorder=20)
 
+    def highsim_bs(self):
+        _,distances=self.solver.material.high_symmetry_vector()
+        eigenval=self.solver.eigenvalues_high_simmetry()
+        x=np.concatenate((np.linspace(-distances.long, 0, 100)[:-1],
+                              np.linspace(0, distances.med,100)[:-1],
+                              np.linspace(distances.med, distances.short+distances.med, 100)))
+        yliney=np.linspace(eigenval.min(),eigenval.max(),100)
+        ylinegammax=np.zeros(100)
+        ylineMx=np.ones(100)*distances.med
+        _,ax=plt.subplots()
+        ax.plot(x,eigenval, color='black')
+        ax.plot(ylinegammax,yliney, color='black')
+        ax.plot(ylineMx,yliney, color='black')
+
 
 if __name__ == "__main__":
     test=GraphenePz(0, -3.033,0.129, 500)
     testsolve=SolverTwoDimensions(test)
+    testsolve.eigenvalues_high_simmetry()
     testplot=Visualizer(testsolve)
+    testplot.highsim_bs()
     axes = testplot.plotter()
     testplot.plotter_highsimpoints(axes)
+    testplot.clipped_plotter()
     plt.show()
