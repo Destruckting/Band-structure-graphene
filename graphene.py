@@ -264,7 +264,7 @@ class Visualizer:
         ax.plot(ylinegammax,yliney, color='black')
         ax.plot(ylineMx,yliney, color='black')
         ax.set_ylim((eigenval.min()-1, eigenval.max()+1))
-        
+
 
 
 if __name__ == "__main__":
