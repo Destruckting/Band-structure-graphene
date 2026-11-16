@@ -11,7 +11,6 @@ from scipy.linalg import eigh
 import matplotlib.pyplot as plt
 from termcolor import colored
 
-plt.style.use('_mpl-gallery')
 plt.rcParams['text.usetex'] = True
 
 class MaterialTwoDim:
@@ -67,7 +66,7 @@ class MaterialTwoDim:
     def Hamiltonian(self, kxa, kya):
         H = np.zeros([2,2], dtype=complex)
         H[0,0] = 1
-        H[0,1] = 1
+        H[1,1] = 1
         return H
     def overlap_matrix(self, kxa, kya):
         S = np.zeros([2,2], dtype=complex)
@@ -176,10 +175,10 @@ class SolverTwoDimensions:
             for iy, valy in enumerate(self.kya):
                 eigenval, _ = eigh(self.material.Hamiltonian(valx, valy), self.material.overlap_matrix(valx, valy))
                 eigenvalues[ix, iy, :]= eigenval
-        return eigenvalues, dimensions[1]
+        return eigenvalues, dimensions[0]
 
     def eigenvalues_high_simmetry(self):
-        """Tries to solve the eigenvalues for the high simmetry directions"""
+        """Tries to solve the eigenvalues for the high symmetry directions"""
         dimensions = (self.material.Hamiltonian(0, 0)).shape
         highsimvec, _ = self.material.high_symmetry_vector()
         eigenvalues=np.zeros((len(highsimvec.x),dimensions[0]))
@@ -188,9 +187,6 @@ class SolverTwoDimensions:
                              self.material.overlap_matrix(highsimvec.x[i], highsimvec.y[i]))
             eigenvalues[i,:]=eigenval
         return eigenvalues
-
-    def fermi_energy(self): #might be a nice idea to add as an optional calculation
-        pass
 
 
 class Visualizer:
@@ -260,13 +256,15 @@ class Visualizer:
         x=np.concatenate((np.linspace(-distances.long, 0, 100)[:-1],
                               np.linspace(0, distances.med,100)[:-1],
                               np.linspace(distances.med, distances.short+distances.med, 100)))
-        yliney=np.linspace(eigenval.min(),eigenval.max(),100)
+        yliney=np.linspace(eigenval.min()-1,eigenval.max()+1,100)
         ylinegammax=np.zeros(100)
         ylineMx=np.ones(100)*distances.med
         _,ax=plt.subplots()
         ax.plot(x,eigenval, color='black')
         ax.plot(ylinegammax,yliney, color='black')
         ax.plot(ylineMx,yliney, color='black')
+        ax.set_ylim((eigenval.min()-1, eigenval.max()+1))
+        
 
 
 if __name__ == "__main__":
@@ -275,7 +273,7 @@ if __name__ == "__main__":
     testsolve.eigenvalues_high_simmetry()
     testplot=Visualizer(testsolve)
     testplot.highsim_bs()
-    axes = testplot.plotter()
+    axes = testplot.clipped_plotter()
     testplot.plotter_highsimpoints(axes)
-    testplot.clipped_plotter()
+
     plt.show()
