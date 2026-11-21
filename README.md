@@ -41,4 +41,5 @@ The eigenvalues of the current graphene model, Solver and Plotter reproduce the 
 
 ## Authors
 Dylan Assinner & Ella Bernaerts
+
 Bachelor fysica, UAntwerpen
