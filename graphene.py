@@ -1,15 +1,15 @@
 """
 tight binding method for graphene, following the explanation in TB_Saitobook.pdf
 Dylan Assinner (dylan.assinner@student.uantwerpen.be) and Ella Bernaerts (ella.bernaerts@student.uantwerpen.be)
-last updated: 2026-11-15
+last updated: 2026-11-19
 """
 
 from collections import namedtuple
-from math import sqrt
 import numpy as np
 from scipy.linalg import eigh
 import matplotlib.pyplot as plt
 from termcolor import colored
+from matplotlib.ticker import MultipleLocator
 
 plt.rcParams['text.usetex'] = True
 
@@ -102,9 +102,9 @@ class MaterialTwoDim:
                               np.linspace(middle.y, korner.y, 100)))
         linevec = namedtuple('High_symmetry_vector', 'x y')
         line = linevec(linex, liney)
-        distanceKtoGamma=sqrt((korner.x-gam.x)**2+(korner.y-gam.y)**2)
-        distanceGammatoM=sqrt((gam.x-middle.x)**2+(gam.y-middle.y)**2)
-        distanceMtoK=sqrt((middle.x-korner.x)**2+(middle.y-korner.y)**2)
+        distanceKtoGamma=np.sqrt((korner.x-gam.x)**2+(korner.y-gam.y)**2)
+        distanceGammatoM=np.sqrt((gam.x-middle.x)**2+(gam.y-middle.y)**2)
+        distanceMtoK=np.sqrt((middle.x-korner.x)**2+(middle.y-korner.y)**2)
         distancetup=namedtuple('distances','long med short')
         distances=distancetup(distanceKtoGamma, distanceGammatoM, distanceMtoK)
         return line, distances
@@ -113,7 +113,7 @@ class MaterialTwoDim:
 class GraphenePz(MaterialTwoDim):
     @staticmethod
     def function(kxa, kya):
-        return np.exp(1j*kxa/sqrt(3))+2*np.exp(1j*-1*kxa/(2*sqrt(3)))*np.cos(kya/2)
+        return np.exp(1j*kxa/np.sqrt(3))+2*np.exp(-1j*kxa/(2*np.sqrt(3)))*np.cos(kya/2)
 
     def Hamiltonian(self, kxa, kya):
         H = np.zeros([2,2], dtype=complex)
@@ -141,8 +141,146 @@ class GraphenePz(MaterialTwoDim):
     def high_symmetry_points(self):
         highsimpoint= namedtuple('highsimmetrypoints', 'x, y')
         gamma = highsimpoint(0, 0)
-        K = highsimpoint(2*np.pi/sqrt(3), 2*np.pi/3)
-        M= highsimpoint(2*np.pi/sqrt(3), 0)
+        K = highsimpoint(2*np.pi/np.sqrt(3), 2*np.pi/3)
+        M= highsimpoint(2*np.pi/np.sqrt(3), 0)
+        highsim = namedtuple('highsymmetrypositions', 'gamma, K, M')
+        return highsim(gamma, K, M)
+
+
+class Graphene(MaterialTwoDim):
+    def __init__(self, energy2s, energy2p, hss, Sss, hsp, Ssp, hsig, Ssig, Spi, Hpi, amount):
+        super().__init__(energy2p, Hpi, Spi, amount)
+        self.hsigma=hsig
+        self.hss=hss
+        self.hsp=hsp
+        self.es=energy2s
+        self.sss=Sss
+        self.ssp=Ssp
+        self.ssigma=Ssig
+
+    @property
+    def hsigma(self):
+        return self._hsigma
+    @hsigma.setter
+    def hsigma(self, newhsigma):
+        if not isinstance(newhsigma, (float, int)):
+            raise TypeError(colored('Hsigma must be a float or integer','red'))
+        self._hsigma=newhsigma
+
+    @property
+    def hss(self):
+        return self._hss
+    @hss.setter
+    def hss(self, newhss):
+        if not isinstance(newhss, (float, int)):
+            raise TypeError(colored('Hss must be a float or integer','red'))
+        self._hss=newhss
+
+    @property
+    def hsp(self):
+        return self._hsp
+    @hsp.setter
+    def hsp(self, newhsp):
+        if not isinstance(newhsp, (float, int)):
+            raise TypeError(colored('Hsp must be a float or integer','red'))
+        self._hsp=newhsp
+
+    @property
+    def es(self):
+        return self._es
+    @es.setter
+    def es(self, newes):
+        if not isinstance(newes, (float, int)):
+            raise TypeError(colored('Es must be a float or integer','red'))
+        self._es=newes
+
+    @property
+    def ss(self):
+        return self._ss
+    @ss.setter
+    def ss(self, newss):
+        if not isinstance(newss, (float, int)):
+            raise TypeError(colored('Ss must be a float or integer','red'))
+        self._ss=newss
+
+    @property
+    def ssp(self):
+        return self._ssp
+    @ssp.setter
+    def ssp(self, newssp):
+        if not isinstance(newssp, (float, int)):
+            raise TypeError(colored('Ssp must be a float or integer','red'))
+        self._ssp=newssp
+
+    @property
+    def ssigma(self):
+        return self._ssigma
+    @ssigma.setter
+    def ssigma(self, newssigma):
+        if not isinstance(newssigma, (float, int)):
+            raise TypeError(colored('ssigma must be a float or integer','red'))
+        self._ssigma=newssigma
+
+    def Hamiltonian(self, kxa, kya):
+        H=np.zeros([8,8], dtype=complex)
+        H[0,0]=self.es
+        H[1,1]=self.ep
+        H[2,2]=self.ep
+        H[3,3]=self.ep
+        H[4,4]=self.es
+        H[5,5]=self.ep
+        H[6,6]=self.ep
+        H[7,7]=self.ep
+        H[0,4]=self.hss*(np.exp(1j*kxa/np.sqrt(3))+2*np.exp(-1j*kxa/(2*np.sqrt(3)))*np.cos(kya/2))
+        H[0,5]=self.hsp*(-np.exp(1j*kxa/np.sqrt(3))+np.exp(-1j*kxa/(2*np.sqrt(3)))*np.cos(kya/2))
+        H[0,6]=self.hsp*-1j*np.sqrt(3)*np.exp(-1*1j*kxa/(2*np.sqrt(3)))*np.sin(kya/2)
+        H[1,4]=-H[0,5]
+        H[1,5]=-self.hsigma*np.exp(1j*kxa/np.sqrt(3))+(-self.hsigma/2+3*self.t/2)*np.exp(-1j*kxa/(2*np.sqrt(3)))*np.cos(kya/2)
+        H[1,6]=1j*(np.sqrt(3)/2)*(self.hsigma+self.t)*np.exp(-1j*kxa/(2*np.sqrt(3)))*np.sin(kya/2)
+        H[2,4]=-H[0,6]
+        H[2,5]=H[1,6]
+        H[2,6]=self.t*np.exp(1j*kxa/np.sqrt(3))+(-3*self.hsigma/2+self.t/2)*np.exp(-1j*kxa/(2*np.sqrt(3)))*np.cos(kya/2)
+        H[3,7]=self.t*(np.exp(1j*kxa/np.sqrt(3))+2*np.exp(-1j*kxa/(2*np.sqrt(3)))*np.cos(kya/2))
+        for row in range(4,8):
+            for column in range(0,4):
+                H[row,column]=np.conjugate(H[row-4, column+4])
+        return H
+
+    def overlap_matrix(self, kxa, kya):
+        S = np.zeros([8, 8], dtype=complex)
+        for index in range(8):
+            S[index,index]=1
+        S[0, 4] = self.sss * (
+                    np.exp(1j * kxa / np.sqrt(3)) + 2 * np.exp(-1j * kxa / (2 * np.sqrt(3))) * np.cos(kya / 2))
+        S[0, 5] = self.ssp * (-np.exp(1j * kxa / np.sqrt(3)) + np.exp(-1j * kxa / (2 * np.sqrt(3))) * np.cos(kya / 2))
+        S[0, 6] = self.ssp * -1j * np.sqrt(3) * np.exp(-1 * 1j * kxa / (2 * np.sqrt(3))) * np.sin(kya / 2)
+        S[1, 4] = -S[0, 5]
+        S[1, 5] = -self.ssigma * np.exp(1j * kxa / np.sqrt(3)) + (-self.ssigma / 2 + 3 * self.s / 2) * np.exp(
+            -1j * kxa / (2 * np.sqrt(3))) * np.cos(kya / 2)
+        S[1, 6] = 1j * (np.sqrt(3) / 2) * (self.ssigma + self.s) * np.exp(-1j * kxa / (2 * np.sqrt(3))) * np.sin(
+            kya / 2)
+        S[2, 4] = -S[0, 6]
+        S[2, 5] = S[1, 6]
+        S[2, 6] = self.s * np.exp(1j * kxa / np.sqrt(3)) + (-3 * self.ssigma / 2 + self.s / 2) * np.exp(
+            -1j * kxa / (2 * np.sqrt(3))) * np.cos(kya / 2)
+        S[3, 7] = self.s * (np.exp(1j * kxa / np.sqrt(3)) + 2 * np.exp(-1j * kxa / (2 * np.sqrt(3))) * np.cos(kya / 2))
+        for row in range(4, 8):
+            for column in range(0, 4):
+                S[row, column] = np.conjugate(S[row - 4, column + 4])
+        return S
+
+    def brilluin_zone(self):
+        kxa = np.linspace(-2*np.pi/np.sqrt(3), 2*np.pi/np.sqrt(3), self.amount)
+        kya = np.linspace(-4*np.pi/3, 4*np.pi/3, self.amount)
+        bz = namedtuple("brilluin_zone", "kxa, kya")
+        brilzone = bz(kxa, kya)
+        return brilzone
+
+    def high_symmetry_points(self):
+        highsimpoint= namedtuple('highsimmetrypoints', 'x, y')
+        gamma = highsimpoint(0, 0)
+        K = highsimpoint(2*np.pi/np.sqrt(3), 2*np.pi/3)
+        M= highsimpoint(2*np.pi/np.sqrt(3), 0)
         highsim = namedtuple('highsymmetrypositions', 'gamma, K, M')
         return highsim(gamma, K, M)
 
@@ -250,7 +388,7 @@ class Visualizer:
         ax.scatter(korner.x, korner.y, 0, color='black')
         ax.text(korner.x + 0.2, korner.y + 0.2, 0, 'K', ha='center', va='center', fontsize=12, zorder=20)
 
-    def highsim_bs(self):
+    def highsym_bs(self):
         _,distances=self.solver.material.high_symmetry_vector()
         eigenval=self.solver.eigenvalues_high_simmetry()
         x=np.concatenate((np.linspace(-distances.long, 0, 100)[:-1],
@@ -261,19 +399,38 @@ class Visualizer:
         ylineMx=np.ones(100)*distances.med
         _,ax=plt.subplots()
         ax.plot(x,eigenval, color='black')
-        ax.plot(ylinegammax,yliney, color='black')
-        ax.plot(ylineMx,yliney, color='black')
+        ax.plot(ylinegammax,yliney, color='black', linewidth=0.6)
+        ax.plot(ylineMx,yliney, color='black', linewidth=0.6)
         ax.set_ylim((eigenval.min()-1, eigenval.max()+1))
+        ax.set_xlim((-distances.long, distances.short+distances.med))
+        ax.set_xticks((-distances.long,0,distances.med,distances.med+distances.short),('K',r'$\Gamma$', 'M', 'K'))
+        ax.tick_params(axis='y', which='both', direction='in')
+        ax.yaxis.set_major_locator(MultipleLocator(5))
+        ax.yaxis.set_minor_locator(MultipleLocator(1))
+        ax.set_ylabel('E [eV]')
+        secondax=ax.secondary_yaxis(location='right')
+        secondax.yaxis.set_major_locator(MultipleLocator(5))
+        secondax.yaxis.set_minor_locator(MultipleLocator(1))
+        secondax.tick_params(axis='y', which='both', direction='in')
+        secondax.set_yticklabels([])
+        return ax
 
 
 
 if __name__ == "__main__":
-    test=GraphenePz(0, -3.033,0.129, 500)
-    testsolve=SolverTwoDimensions(test)
-    testsolve.eigenvalues_high_simmetry()
-    testplot=Visualizer(testsolve)
-    testplot.highsim_bs()
-    axes = testplot.clipped_plotter()
-    testplot.plotter_highsimpoints(axes)
-
+    # test=GraphenePz(0, -3.033,0.129, 500)
+    # testsolve=SolverTwoDimensions(test)
+    # testplot=Visualizer(testsolve)
+    # testplot.highsim_bs()
+    # axes = testplot.clipped_plotter()
+    # # testplot.plotter_highsimpoints(axes)
+    # plt.show()
+    material = Graphene(energy2s=-8.868,energy2p= 0, hss=-6.769,
+                        Sss=0.212, hsp=-5.580, Ssp=0.102,
+                        hsig=-5.037, Ssig=0.146, Hpi=-3.033,
+                        Spi=0.129, amount=500)
+    solver= SolverTwoDimensions(material)
+    plotter= Visualizer(solver)
+    axes=plotter.highsym_bs()
+    axes.set_title(r'Brilluin zone Graphene (2s, 2p$_x$, 2p$_y$, 2p$_z$) for high symmetry points', fontsize=16)
     plt.show()
