@@ -1,0 +1,15 @@
+# PyCharm / JetBrains IDE
+.idea/
+
+# Python cache & virtual environments
+__pycache__/
+*.py[cod]
+*.class
+.venv/
+venv/
+env/
+
+# Jupyter & OS clutter
+.ipynb_checkpoints/
+.DS_Store
+Thumbs.db
