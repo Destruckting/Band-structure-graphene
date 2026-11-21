@@ -31,7 +31,13 @@ Afterward, we will try to use this code to calculate the band structure and DOS 
 
 ## Current results
 The eigenvalues of the current graphene model, Solver and Plotter reproduce the same graphs as seen in reference document `TB_Saitobook.pdf`
-
+### PolyAcetylene
+![PolyAcetylene_Band_Structure_DOS](results/PolyAcetylene.png)
+### Graphene, only 2p_z
+![Graphene_pz_highsymmetry](BS_graphene_2pz_highsym.png)
+![Graphene_pz_3D](BS_graphene_2pz_3D.png)
+## Graphene, full model
+![Graphene_highsymmetry](BS_graphene_highsym.png)
 
 ## Authors
 Dylan Assinner & Ella Bernaerts

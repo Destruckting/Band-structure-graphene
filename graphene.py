@@ -567,10 +567,14 @@ if __name__ == "__main__":
     test = GraphenePz(energy2p=0, t=-3.033, s=0.129, amount=500)
     testsolve = SolverTwoDimensions(test)
     testplot = Visualizer(testsolve)
-    testplot.highsym_bs()
+    axtest = testplot.highsym_bs()
+    axtest.set_title(r'Brilluin zone Graphene (2p$_z$)'
+                     r' for high symmetry points', fontsize=16)
     axestest = testplot.clipped_plotter()
-    testplot.plotter_highsympoints(axestest, linecolor='maroon',
-                                   labelcolor='red')
+    axestest.set_title(r'Brilluin zone Graphene (2p$_z$)'
+                       r' for high symmetry points', fontsize=16)
+    # testplot.plotter_highsympoints(axestest, linecolor='maroon',
+    #                                labelcolor='red')
     plt.show()
     # actual calculations for full system
     graphene = Graphene(energy2s=-8.868, energy2p=0, hss=-6.769, Sss=0.212,
@@ -582,6 +586,8 @@ if __name__ == "__main__":
     axes.set_title(r'Brilluin zone Graphene (2s, 2p$_x$, 2p$_y$, 2p$_z$)'
                    r' for high symmetry points', fontsize=16)
     axes3D = graphene_plotter.clipped_plotter()
-    graphene_plotter.plotter_highsympoints(axes3D, linecolor='maroon',
-                                           labelcolor='red')
+    axes3D.set_title(r'Brilluin zone Graphene (2s, 2p$_x$, 2p$_y$, 2p$_z$)'
+                     r' for high symmetry points', fontsize=16)
+    # graphene_plotter.plotter_highsympoints(axes3D, linecolor='maroon',
+    #                                        labelcolor='red')
     plt.show()
