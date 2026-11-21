@@ -34,10 +34,10 @@ The eigenvalues of the current graphene model, Solver and Plotter reproduce the 
 ### PolyAcetylene
 ![PolyAcetylene_Band_Structure_DOS](results/PolyAcetylene.png)
 ### Graphene, only 2p_z
-![Graphene_pz_highsymmetry](BS_graphene_2pz_highsym.png)
-![Graphene_pz_3D](BS_graphene_2pz_3D.png)
+![Graphene_pz_highsymmetry](results/BS_graphene_2pz_highsym.png)
+![Graphene_pz_3D](results/BS_graphene_2pz_3D.png)
 ## Graphene, full model
-![Graphene_highsymmetry](BS_graphene_highsym.png)
+![Graphene_highsymmetry](results/BS_graphene_highsym.png)
 
 ## Authors
 Dylan Assinner & Ella Bernaerts
